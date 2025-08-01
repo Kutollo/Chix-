@@ -2,71 +2,77 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daily Growth Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Focus31</title>
   <style>
     :root {
-      --bg: #f3f4f6;
-      --primary: #3b3c4f;
-      --accent: #6a8caf;
+      --bg: #f2f4f8;
       --card: #ffffff;
+      --accent: #7c93c3;
+      --text: #2a2e3b;
       --shadow: rgba(0,0,0,0.06);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
     body {
+      margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background: var(--bg);
-      color: var(--primary);
+      color: var(--text);
       padding: 1rem;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
-    .subtitle {
-      text-align: center;
-      font-size: 0.95rem;
-      color: #777;
-      margin-bottom: 1rem;
-    }
+    h1 { text-align: center; }
+    .hidden { display: none; }
     .login-screen {
       max-width: 400px;
-      margin: 8rem auto;
-      padding: 2rem;
+      margin: 30vh auto;
       background: var(--card);
-      border-radius: 10px;
+      padding: 2rem;
+      border-radius: 12px;
       box-shadow: 0 4px 12px var(--shadow);
       text-align: center;
     }
     .login-screen input {
       padding: 0.7rem;
       width: 80%;
-      margin-top: 1rem;
       font-size: 1rem;
-      border: 1px solid #ccc;
+      margin-top: 1rem;
       border-radius: 6px;
+      border: 1px solid #ccc;
     }
     .error { color: red; margin-top: 0.5rem; }
-    .main {
-      max-width: 1000px;
-      margin: auto;
+
+    .main { max-width: 1000px; margin: auto; }
+    .progress-ring {
+      width: 100px;
+      height: 100px;
+      margin: 1rem auto;
+      position: relative;
     }
-    .banner, .streak, .refocus {
-      background: var(--card);
-      padding: 1rem;
-      border-left: 4px solid var(--accent);
-      margin-bottom: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px var(--shadow);
+    .progress-ring svg {
+      transform: rotate(-90deg);
     }
+    .progress-ring circle {
+      fill: none;
+      stroke-width: 10;
+      stroke-linecap: round;
+    }
+    .progress-bg { stroke: #ddd; }
+    .progress-bar { stroke: var(--accent); transition: stroke-dasharray 0.5s; }
+    .progress-text {
+      position: absolute;
+      top: 38%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
     .card {
       background: var(--card);
+      margin: 1rem 0;
+      padding: 1rem;
       border-radius: 10px;
       box-shadow: 0 2px 6px var(--shadow);
-      padding: 1rem;
-      margin-bottom: 1rem;
-      display: flex;
-      flex-direction: column;
     }
     .card label {
       display: flex;
@@ -78,8 +84,9 @@
       height: 1.5rem;
     }
     .focus { font-weight: bold; }
-    .verse { font-size: 0.9rem; color: #555; margin-top: 0.2rem; }
-    button {
+    .verse { font-size: 0.9rem; color: #555; }
+
+    .btn {
       background: var(--accent);
       color: white;
       border: none;
@@ -90,327 +97,169 @@
       display: block;
       margin: 1rem auto;
     }
-    .refocus-box {
-      display: none;
-      background: #eaf4fd;
+
+    .shield {
+      background: #e4eefc;
       padding: 1rem;
       border-left: 4px solid var(--accent);
-      margin-top: 1rem;
+      margin: 1rem 0;
       border-radius: 8px;
+      display: none;
+      text-align: center;
+    }
+
+    .quote-box {
+      text-align: center;
+      margin-top: 1rem;
+      font-style: italic;
+      color: #444;
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 0.8rem; }
+      .progress-ring { width: 80px; height: 80px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Login Screen -->
-  <div id="loginScreen" class="login-screen">
-    <h1>Daily Tracker</h1>
-    <p class="subtitle">Enter your access code</p>
-    <input type="password" id="passwordInput" placeholder="••••••" />
-    <div class="error" id="loginError"></div>
+<!-- Login -->
+<div id="loginScreen" class="login-screen">
+  <h1>Focus31</h1>
+  <p>Enter access code</p>
+  <input type="password" id="passwordInput" placeholder="••••••" />
+  <div class="error" id="loginError"></div>
+</div>
+
+<!-- Main Content -->
+<div id="mainContent" class="main hidden">
+  <h1>🧠 Focus31</h1>
+  <div class="progress-ring">
+    <svg width="100" height="100">
+      <circle class="progress-bg" r="40" cx="50" cy="50"/>
+      <circle class="progress-bar" r="40" cx="50" cy="50" stroke-dasharray="0 251.2"/>
+    </svg>
+    <div class="progress-text" id="progressText">0%</div>
   </div>
 
-  <!-- Main Content -->
-  <div id="mainContent" class="main" style="display:none;">
-    <h1>📅 Daily Growth Tracker</h1>
-    <p class="subtitle">Walk in freedom one day at a time</p>
+  <button class="btn" onclick="showShield()">🛡️ Shield Mode</button>
+  <div class="shield" id="shieldBox"></div>
 
-    <div class="banner" id="fastingBanner" style="display:none;">🛐 Today is Monday – Fast with purpose.</div>
-    <div class="streak" id="streak">Streak: 0 days</div>
-    <button onclick="showRefocus()">🛡️ Emergency Refocus</button>
-    <div class="refocus-box" id="refocusBox"></div>
+  <button class="btn" onclick="showQuote()">🎯 Victory Quote</button>
+  <div class="quote-box" id="quoteBox">"My purity is my protest."</div>
 
-    <div id="daysContainer"></div>
-  </div>
+  <div id="dayList"></div>
+</div>
 
-  <script>
-    const password = "focus31";
+<script>
+  const password = "focus31";
 
-    document.getElementById("passwordInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") checkPassword();
+  document.getElementById("passwordInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") checkPassword();
+  });
+
+  function checkPassword() {
+    const input = document.getElementById("passwordInput").value;
+    if (input === password) {
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("mainContent").classList.remove("hidden");
+      init();
+    } else {
+      document.getElementById("loginError").textContent = "Wrong code.";
+    }
+  }
+
+  const days = [
+    ["Surrender", "Romans 12:1‑2"], ["Repentance", "1 John 1:9"],
+    ["Identity in Christ", "2 Corinthians 5:17"], ["Spiritual War", "Ephesians 6:11‑18"],
+    ["Lust is a lie", "James 1:14‑15"], ["Purity", "Psalm 119:9"],
+    ["Accountability", "Proverbs 27:17"], ["Fasting + Prayer", "Isaiah 58:6"],
+    ["Thoughts", "Philippians 4:8"], ["New habits", "Colossians 3:5‑10"],
+    ["Avoiding triggers", "1 Corinthians 10:13"], ["God’s love", "Romans 8:38‑39"],
+    ["The eyes", "Matthew 5:28‑29"], ["Spiritual strength", "Isaiah 40:31"],
+    ["Battle fatigue", "Galatians 6:9"], ["Self‑control", "Titus 2:11‑12"],
+    ["Hope", "Lamentations 3:22‑23"], ["Victory mindset", "1 Corinthians 15:57"],
+    ["Confession", "James 5:16"], ["Emotional healing", "Psalm 147:3"],
+    ["Joy in God", "Psalm 16:11"], ["Clean hands", "Psalm 24:3‑4"],
+    ["Eyes on Jesus", "Hebrews 12:1‑2"], ["No shame", "Romans 8:1"],
+    ["Grace", "Ephesians 2:8‑9"], ["Freedom", "Psalm 107:14"],
+    ["Stand firm", "1 Peter 5:8‑9"], ["Body is a temple", "1 Corinthians 6:19‑20"],
+    ["Victory declared", "Revelation 12:11"], ["Daily renewal", "2 Corinthians 4:16"],
+    ["Testimony", "Psalm 40:1‑3"]
+  ];
+
+  function init() {
+    const container = document.getElementById("dayList");
+    container.innerHTML = "";
+    let completed = 0;
+
+    days.forEach((item, i) => {
+      const [focus, verse] = item;
+      const checked = localStorage.getItem(`day${i}`) === "true";
+      if (checked) completed++;
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <label>
+          <input type="checkbox" id="day${i}" ${checked ? "checked" : ""}/>
+          <div>
+            <div class="focus">Day ${i+1}: ${focus}</div>
+            <div class="verse">${verse}</div>
+          </div>
+        </label>
+      `;
+      container.appendChild(card);
+
+      document.getElementById(`day${i}`).addEventListener("change", e => {
+        localStorage.setItem(`day${i}`, e.target.checked);
+        updateProgress();
+      });
     });
 
-    function checkPassword() {
-      const input = document.getElementById("passwordInput").value;
-      if (input === password) {
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("mainContent").style.display = "block";
-        initTracker();
-      } else {
-        document.getElementById("loginError").textContent = "Wrong code.";
-      }
-    }
+    updateProgress();
+  }
 
-    const days = [
-      ["Surrender", "Romans 12:1‑2"], ["Repentance", "1 John 1:9"],
-      ["Identity in Christ", "2 Corinthians 5:17"], ["Spiritual War", "Ephesians 6:11‑18"],
-      ["Lust is a lie", "James 1:14‑15"], ["Purity", "Psalm 119:9"],
-      ["Accountability", "Proverbs 27:17"], ["Fasting + Prayer", "Isaiah 58:6"],
-      ["Thoughts", "Philippians 4:8"], ["New habits", "Colossians 3:5‑10"],
-      ["Avoiding triggers", "1 Corinthians 10:13"], ["God’s love", "Romans 8:38‑39"],
-      ["The eyes", "Matthew 5:28‑29"], ["Spiritual strength", "Isaiah 40:31"],
-      ["Battle fatigue", "Galatians 6:9"], ["Self‑control", "Titus 2:11‑12"],
-      ["Hope", "Lamentations 3:22‑23"], ["Victory mindset", "1 Corinthians 15:57"],
-      ["Confession", "James 5:16"], ["Emotional healing", "Psalm 147:3"],
-      ["Joy in God", "Psalm 16:11"], ["Clean hands", "Psalm 24:3‑4"],
-      ["Eyes on Jesus", "Hebrews 12:1‑2"], ["No shame", "Romans 8:1"],
-      ["Grace", "Ephesians 2:8‑9"], ["Freedom", "Psalm 107:14"],
-      ["Stand firm", "1 Peter 5:8‑9"], ["Body is a temple", "1 Corinthians 6:19‑20"],
-      ["Victory declared", "Revelation 12:11"], ["Daily renewal", "2 Corinthians 4:16"],
-      ["Testimony", "Psalm 40:1‑3"]
+  function updateProgress() {
+    let count = 0;
+    for (let i = 0; i < days.length; i++) {
+      if (localStorage.getItem(`day${i}`) === "true") count++;
+    }
+    const percent = Math.round((count / days.length) * 100);
+    const circle = document.querySelector(".progress-bar");
+    const radius = 40;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (percent / 100) * circumference;
+
+    circle.setAttribute("stroke-dasharray", `${circumference - offset} ${circumference}`);
+    document.getElementById("progressText").textContent = `${percent}%`;
+  }
+
+  function showShield() {
+    const verses = [
+      "Romans 6:14 – Sin is no longer your master.",
+      "1 Cor. 10:13 – God will provide a way out.",
+      "Galatians 5:16 – Walk by the Spirit.",
+      "2 Tim 2:22 – Flee youthful lusts.",
+      "Psalm 119:11 – I've hidden Your Word in my heart."
     ];
+    const random = verses[Math.floor(Math.random() * verses.length)];
+    const shieldBox = document.getElementById("shieldBox");
+    shieldBox.style.display = "block";
+    shieldBox.innerHTML = `<strong>${random}</strong><br>Breathe in… Breathe out… Refocus.`;
+  }
 
-    function initTracker() {
-      const container = document.getElementById("daysContainer");
-      const today = new Date();
-      if (today.getDay() === 1) document.getElementById("fastingBanner").style.display = "block";
-
-      let streak = 0;
-
-      days.forEach((item, i) => {
-        const [focus, verse] = item;
-        const checked = localStorage.getItem(`day${i}`) === "true";
-        if (checked) streak++;
-
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <label>
-            <input type="checkbox" id="day${i}" ${checked ? "checked" : ""} />
-            <div>
-              <div class="focus">Day ${i + 1}: ${focus}</div>
-              <div class="verse">${verse}</div>
-            </div>
-          </label>
-        `;
-        container.appendChild(card);
-
-        document.getElementById(`day${i}`).addEventListener("change", (e) => {
-          localStorage.setItem(`day${i}`, e.target.checked);
-          updateStreak();
-        });
-      });
-
-      updateStreak();
-    }
-
-    function updateStreak() {
-      let count = 0;
-      for (let i = 0; i < days.length; i++) {
-        if (localStorage.getItem(`day${i}`) === "true") count++;
-      }
-      document.getElementById("streak").textContent = `Streak: ${count} day${count !== 1 ? 's' : ''}`;
-    }
-
-    function showRefocus() {
-      const verses = [
-        "Romans 6:14 – Sin shall no longer be your master.",
-        "1 Cor. 10:13 – God always provides a way out.",
-        "Galatians 5:16 – Walk by the Spirit.",
-        "2 Tim 2:22 – Flee youthful lusts.",
-        "Psalm 119:11 – Your word I’ve hidden in my heart."
-      ];
-      const verse = verses[Math.floor(Math.random() * verses.length)];
-      const box = document.getElementById("refocusBox");
-      box.style.display = "block";
-      box.innerHTML = `
-        <p><strong>${verse}</strong></p>
-        <p>Breathe in deeply… Breathe out temptation.</p>
-        <p><em>“Jesus, I surrender. I choose freedom now.”</em></p>
-      `;
-    }
-  </script>
-</body>
-</html>      padding: 0.5rem;
-      font-family: inherit;
-    }
-    .refocus-btn {
-      display: block;
-      margin: 1rem auto;
-      background: var(--accent);
-      color: white;
-      padding: 0.8rem 1.5rem;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    .refocus-box {
-      display: none;
-      padding: 1rem;
-      background: #e9f4fc;
-      border-left: 4px solid var(--accent);
-      margin-top: 1rem;
-    }
-    .counter {
-      text-align: center;
-      margin-bottom: 1rem;
-      font-weight: bold;
-      color: var(--primary);
-    }
-    .login-box {
-      text-align: center;
-      padding: 3rem 1rem;
-    }
-    input[type="password"] {
-      padding: 0.6rem;
-      font-size: 1rem;
-      width: 200px;
-      margin-top: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    .login-error {
-      color: red;
-      margin-top: 1rem;
-    }
-  </style>
-</head>
-<body>
-  <!-- LOGIN SCREEN -->
-  <div id="loginScreen" class="container login-box">
-    <h1>📓 Daily Journal</h1>
-    <p class="subtitle">Welcome back. Enter your passcode to access your notes.</p>
-    <input type="password" id="passwordInput" placeholder="Enter code" />
-    <div id="loginError" class="login-error"></div>
-  </div>
-
-  <!-- MAIN JOURNAL CONTENT -->
-  <div class="container" id="mainContent" style="display:none;">
-    <h1>🧠 Daily Growth Journal</h1>
-    <p class="subtitle">Track your focus & renew your mind daily</p>
-
-    <div class="fasting-banner" id="fastingBanner">🛐 Today is Monday – Stay strong during your fast!</div>
-    <div class="counter" id="streak">Streak: 0 days</div>
-
-    <button class="refocus-btn" onclick="showRefocus()">🛡️ Emergency Refocus</button>
-    <div class="refocus-box" id="refocusBox"></div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Day</th>
-          <th>✓</th>
-          <th>Focus</th>
-          <th>Verse</th>
-          <th>Journal</th>
-        </tr>
-      </thead>
-      <tbody id="tracker-body"></tbody>
-    </table>
-  </div>
-
-  <script>
-    const password = "focus31"; // You can change this!
-
-    document.getElementById("passwordInput").addEventListener("keydown", function (e) {
-      if (e.key === "Enter") checkPassword();
-    });
-
-    function checkPassword() {
-      const input = document.getElementById("passwordInput").value;
-      if (input === password) {
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("mainContent").style.display = "block";
-        initializeJournal();
-      } else {
-        document.getElementById("loginError").textContent = "Incorrect password.";
-      }
-    }
-
-    function initializeJournal() {
-      const days = [
-        ["Surrender", "Romans 12:1‑2"],
-        ["Repentance", "1 John 1:9"],
-        ["Identity in Christ", "2 Corinthians 5:17"],
-        ["Spiritual War", "Ephesians 6:11‑18"],
-        ["Lust is a lie", "James 1:14‑15"],
-        ["Purity", "Psalm 119:9"],
-        ["Accountability", "Proverbs 27:17"],
-        ["Fasting + Prayer", "Isaiah 58:6"],
-        ["Thoughts", "Philippians 4:8"],
-        ["New habits", "Colossians 3:5‑10"],
-        ["Avoiding triggers", "1 Corinthians 10:13"],
-        ["God’s love", "Romans 8:38‑39"],
-        ["The eyes", "Matthew 5:28‑29"],
-        ["Spiritual strength", "Isaiah 40:31"],
-        ["Battle fatigue", "Galatians 6:9"],
-        ["Self‑control", "Titus 2:11‑12"],
-        ["Hope", "Lamentations 3:22‑23"],
-        ["Victory mindset", "1 Corinthians 15:57"],
-        ["Confession", "James 5:16"],
-        ["Emotional healing", "Psalm 147:3"],
-        ["Joy in God", "Psalm 16:11"],
-        ["Clean hands", "Psalm 24:3‑4"],
-        ["Eyes on Jesus", "Hebrews 12:1‑2"],
-        ["No shame", "Romans 8:1"],
-        ["Grace", "Ephesians 2:8‑9"],
-        ["Freedom", "Psalm 107:14"],
-        ["Stand firm", "1 Peter 5:8‑9"],
-        ["Body is a temple", "1 Corinthians 6:19‑20"],
-        ["Victory declared", "Revelation 12:11"],
-        ["Daily renewal", "2 Corinthians 4:16"],
-        ["Testimony", "Psalm 40:1‑3"],
-      ];
-
-      const tbody = document.getElementById("tracker-body");
-      const weekday = new Date().getDay();
-      if (weekday === 1) document.getElementById("fastingBanner").style.display = "block";
-
-      function updateStreak() {
-        let streak = 0;
-        for (let i = 0; i < days.length; i++) {
-          if (localStorage.getItem(`day${i}`) === "true") streak++;
-        }
-        document.getElementById("streak").textContent = `Streak: ${streak} day${streak !== 1 ? 's' : ''}`;
-      }
-
-      days.forEach((day, index) => {
-        const checked = localStorage.getItem(`day${index}`) === "true";
-        const savedNote = localStorage.getItem(`note${index}`) || "";
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>Day ${index + 1}</td>
-          <td><input type="checkbox" id="day${index}" ${checked ? "checked" : ""}></td>
-          <td>${day[0]}</td>
-          <td>${day[1]}</td>
-          <td><textarea class="journal" id="note${index}">${savedNote}</textarea></td>
-        `;
-        tbody.appendChild(row);
-
-        document.getElementById(`day${index}`).addEventListener("change", e => {
-          localStorage.setItem(`day${index}`, e.target.checked);
-          updateStreak();
-        });
-
-        document.getElementById(`note${index}`).addEventListener("input", e => {
-          localStorage.setItem(`note${index}`, e.target.value);
-        });
-      });
-
-      updateStreak();
-    }
-
-    function showRefocus() {
-      const verses = [
-        "Romans 6:14 – Sin is no longer your master.",
-        "1 Corinthians 10:13 – God will provide a way out.",
-        "Galatians 5:16 – Walk by the Spirit, not the flesh.",
-        "2 Timothy 2:22 – Flee youthful lusts. Pursue righteousness.",
-        "Psalm 119:11 – I've hidden Your Word in my heart.",
-      ];
-      const verse = verses[Math.floor(Math.random() * verses.length)];
-      const refocusBox = document.getElementById("refocusBox");
-      refocusBox.style.display = "block";
-      refocusBox.innerHTML = `
-        <h3>🛡️ Scripture Shield</h3>
-        <p><strong>${verse}</strong></p>
-        <p>Breathe in Jesus… Breathe out temptation…</p>
-        <p>⏳ Refocus for 2 minutes...</p>
-        <p><em>Lord, I surrender this moment to You. I choose freedom, not slavery. Remind me who I am.</em></p>
-      `;
-    }
-  </script>
+  function showQuote() {
+    const quotes = [
+      "My purity is my protest.",
+      "I am not a slave to urges.",
+      "Freedom starts with one choice.",
+      "Eyes up. Spirit focused.",
+      "Every day clean is a day claimed."
+    ];
+    const quote = quotes[Math.floor(Math.random() * quotes.length)];
+    document.getElementById("quoteBox").textContent = `"${quote}"`;
+  }
+</script>
 </body>
 </html>
