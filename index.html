@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily Journal</title>
+  <style>
+    :root {
+      --bg: #f4f6fa;
+      --primary: #5c5470;
+      --accent: #8eaccd;
+      --text: #222;
+      --gray: #aaa;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 1.5rem;
+      color: var(--text);
+    }
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: var(--primary);
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--gray);
+      margin-bottom: 1.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.6rem;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f0f0f0;
+    }
+    .fasting-banner {
+      background: #fff0e0;
+      padding: 1rem;
+      border-left: 5px solid orange;
+      margin-bottom: 1rem;
+      font-weight: bold;
+      display: none;
+    }
+    .journal {
+      width: 100%;
+      height: 80px;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      font-family: inherit;
+    }
+    .refocus-btn {
+      display: block;
+      margin: 1rem auto;
+      background: var(--accent);
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .refocus-box {
+      display: none;
+      padding: 1rem;
+      background: #e9f4fc;
+      border-left: 4px solid var(--accent);
+      margin-top: 1rem;
+    }
+    .counter {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    .login-box {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    input[type="password"] {
+      padding: 0.6rem;
+      font-size: 1rem;
+      width: 200px;
+      margin-top: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .login-error {
+      color: red;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="container login-box">
+    <h1>📓 Daily Journal</h1>
+    <p class="subtitle">Welcome back. Enter your passcode to access your notes.</p>
+    <input type="password" id="passwordInput" placeholder="Enter code" />
+    <div id="loginError" class="login-error"></div>
+  </div>
+
+  <!-- MAIN JOURNAL CONTENT -->
+  <div class="container" id="mainContent" style="display:none;">
+    <h1>🧠 Daily Growth Journal</h1>
+    <p class="subtitle">Track your focus & renew your mind daily</p>
+
+    <div class="fasting-banner" id="fastingBanner">🛐 Today is Monday – Stay strong during your fast!</div>
+    <div class="counter" id="streak">Streak: 0 days</div>
+
+    <button class="refocus-btn" onclick="showRefocus()">🛡️ Emergency Refocus</button>
+    <div class="refocus-box" id="refocusBox"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>✓</th>
+          <th>Focus</th>
+          <th>Verse</th>
+          <th>Journal</th>
+        </tr>
+      </thead>
+      <tbody id="tracker-body"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const password = "focus31"; // You can change this!
+
+    document.getElementById("passwordInput").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") checkPassword();
+    });
+
+    function checkPassword() {
+      const input = document.getElementById("passwordInput").value;
+      if (input === password) {
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+        initializeJournal();
+      } else {
+        document.getElementById("loginError").textContent = "Incorrect password.";
+      }
+    }
+
+    function initializeJournal() {
+      const days = [
+        ["Surrender", "Romans 12:1‑2"],
+        ["Repentance", "1 John 1:9"],
+        ["Identity in Christ", "2 Corinthians 5:17"],
+        ["Spiritual War", "Ephesians 6:11‑18"],
+        ["Lust is a lie", "James 1:14‑15"],
+        ["Purity", "Psalm 119:9"],
+        ["Accountability", "Proverbs 27:17"],
+        ["Fasting + Prayer", "Isaiah 58:6"],
+        ["Thoughts", "Philippians 4:8"],
+        ["New habits", "Colossians 3:5‑10"],
+        ["Avoiding triggers", "1 Corinthians 10:13"],
+        ["God’s love", "Romans 8:38‑39"],
+        ["The eyes", "Matthew 5:28‑29"],
+        ["Spiritual strength", "Isaiah 40:31"],
+        ["Battle fatigue", "Galatians 6:9"],
+        ["Self‑control", "Titus 2:11‑12"],
+        ["Hope", "Lamentations 3:22‑23"],
+        ["Victory mindset", "1 Corinthians 15:57"],
+        ["Confession", "James 5:16"],
+        ["Emotional healing", "Psalm 147:3"],
+        ["Joy in God", "Psalm 16:11"],
+        ["Clean hands", "Psalm 24:3‑4"],
+        ["Eyes on Jesus", "Hebrews 12:1‑2"],
+        ["No shame", "Romans 8:1"],
+        ["Grace", "Ephesians 2:8‑9"],
+        ["Freedom", "Psalm 107:14"],
+        ["Stand firm", "1 Peter 5:8‑9"],
+        ["Body is a temple", "1 Corinthians 6:19‑20"],
+        ["Victory declared", "Revelation 12:11"],
+        ["Daily renewal", "2 Corinthians 4:16"],
+        ["Testimony", "Psalm 40:1‑3"],
+      ];
+
+      const tbody = document.getElementById("tracker-body");
+      const weekday = new Date().getDay();
+      if (weekday === 1) document.getElementById("fastingBanner").style.display = "block";
+
+      function updateStreak() {
+        let streak = 0;
+        for (let i = 0; i < days.length; i++) {
+          if (localStorage.getItem(`day${i}`) === "true") streak++;
+        }
+        document.getElementById("streak").textContent = `Streak: ${streak} day${streak !== 1 ? 's' : ''}`;
+      }
+
+      days.forEach((day, index) => {
+        const checked = localStorage.getItem(`day${index}`) === "true";
+        const savedNote = localStorage.getItem(`note${index}`) || "";
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>Day ${index + 1}</td>
+          <td><input type="checkbox" id="day${index}" ${checked ? "checked" : ""}></td>
+          <td>${day[0]}</td>
+          <td>${day[1]}</td>
+          <td><textarea class="journal" id="note${index}">${savedNote}</textarea></td>
+        `;
+        tbody.appendChild(row);
+
+        document.getElementById(`day${index}`).addEventListener("change", e => {
+          localStorage.setItem(`day${index}`, e.target.checked);
+          updateStreak();
+        });
+
+        document.getElementById(`note${index}`).addEventListener("input", e => {
+          localStorage.setItem(`note${index}`, e.target.value);
+        });
+      });
+
+      updateStreak();
+    }
+
+    function showRefocus() {
+      const verses = [
+        "Romans 6:14 – Sin is no longer your master.",
+        "1 Corinthians 10:13 – God will provide a way out.",
+        "Galatians 5:16 – Walk by the Spirit, not the flesh.",
+        "2 Timothy 2:22 – Flee youthful lusts. Pursue righteousness.",
+        "Psalm 119:11 – I've hidden Your Word in my heart.",
+      ];
+      const verse = verses[Math.floor(Math.random() * verses.length)];
+      const refocusBox = document.getElementById("refocusBox");
+      refocusBox.style.display = "block";
+      refocusBox.innerHTML = `
+        <h3>🛡️ Scripture Shield</h3>
+        <p><strong>${verse}</strong></p>
+        <p>Breathe in Jesus… Breathe out temptation…</p>
+        <p>⏳ Refocus for 2 minutes...</p>
+        <p><em>Lord, I surrender this moment to You. I choose freedom, not slavery. Remind me who I am.</em></p>
+      `;
+    }
+  </script>
+</body>
+</html>
