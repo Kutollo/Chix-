@@ -2,66 +2,226 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Daily Journal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Growth Tracker</title>
   <style>
     :root {
-      --bg: #f4f6fa;
-      --primary: #5c5470;
-      --accent: #8eaccd;
-      --text: #222;
-      --gray: #aaa;
+      --bg: #f3f4f6;
+      --primary: #3b3c4f;
+      --accent: #6a8caf;
+      --card: #ffffff;
+      --shadow: rgba(0,0,0,0.06);
     }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', sans-serif;
       background: var(--bg);
-      margin: 0;
-      padding: 1.5rem;
-      color: var(--text);
-    }
-    .container {
-      max-width: 1000px;
-      margin: auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      color: var(--primary);
+      padding: 1rem;
     }
     h1 {
       text-align: center;
-      color: var(--primary);
+      margin-bottom: 0.5rem;
     }
     .subtitle {
       text-align: center;
-      color: var(--gray);
-      margin-bottom: 1.5rem;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 0.6rem;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-      vertical-align: top;
-    }
-    th {
-      background: #f0f0f0;
-    }
-    .fasting-banner {
-      background: #fff0e0;
-      padding: 1rem;
-      border-left: 5px solid orange;
+      font-size: 0.95rem;
+      color: #777;
       margin-bottom: 1rem;
-      font-weight: bold;
-      display: none;
     }
-    .journal {
-      width: 100%;
-      height: 80px;
-      margin-top: 0.5rem;
-      padding: 0.5rem;
+    .login-screen {
+      max-width: 400px;
+      margin: 8rem auto;
+      padding: 2rem;
+      background: var(--card);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px var(--shadow);
+      text-align: center;
+    }
+    .login-screen input {
+      padding: 0.7rem;
+      width: 80%;
+      margin-top: 1rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .error { color: red; margin-top: 0.5rem; }
+    .main {
+      max-width: 1000px;
+      margin: auto;
+    }
+    .banner, .streak, .refocus {
+      background: var(--card);
+      padding: 1rem;
+      border-left: 4px solid var(--accent);
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px var(--shadow);
+    }
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      box-shadow: 0 2px 6px var(--shadow);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .card label {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .card input[type="checkbox"] {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+    .focus { font-weight: bold; }
+    .verse { font-size: 0.9rem; color: #555; margin-top: 0.2rem; }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: block;
+      margin: 1rem auto;
+    }
+    .refocus-box {
+      display: none;
+      background: #eaf4fd;
+      padding: 1rem;
+      border-left: 4px solid var(--accent);
+      margin-top: 1rem;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login Screen -->
+  <div id="loginScreen" class="login-screen">
+    <h1>Daily Tracker</h1>
+    <p class="subtitle">Enter your access code</p>
+    <input type="password" id="passwordInput" placeholder="••••••" />
+    <div class="error" id="loginError"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div id="mainContent" class="main" style="display:none;">
+    <h1>📅 Daily Growth Tracker</h1>
+    <p class="subtitle">Walk in freedom one day at a time</p>
+
+    <div class="banner" id="fastingBanner" style="display:none;">🛐 Today is Monday – Fast with purpose.</div>
+    <div class="streak" id="streak">Streak: 0 days</div>
+    <button onclick="showRefocus()">🛡️ Emergency Refocus</button>
+    <div class="refocus-box" id="refocusBox"></div>
+
+    <div id="daysContainer"></div>
+  </div>
+
+  <script>
+    const password = "focus31";
+
+    document.getElementById("passwordInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") checkPassword();
+    });
+
+    function checkPassword() {
+      const input = document.getElementById("passwordInput").value;
+      if (input === password) {
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+        initTracker();
+      } else {
+        document.getElementById("loginError").textContent = "Wrong code.";
+      }
+    }
+
+    const days = [
+      ["Surrender", "Romans 12:1‑2"], ["Repentance", "1 John 1:9"],
+      ["Identity in Christ", "2 Corinthians 5:17"], ["Spiritual War", "Ephesians 6:11‑18"],
+      ["Lust is a lie", "James 1:14‑15"], ["Purity", "Psalm 119:9"],
+      ["Accountability", "Proverbs 27:17"], ["Fasting + Prayer", "Isaiah 58:6"],
+      ["Thoughts", "Philippians 4:8"], ["New habits", "Colossians 3:5‑10"],
+      ["Avoiding triggers", "1 Corinthians 10:13"], ["God’s love", "Romans 8:38‑39"],
+      ["The eyes", "Matthew 5:28‑29"], ["Spiritual strength", "Isaiah 40:31"],
+      ["Battle fatigue", "Galatians 6:9"], ["Self‑control", "Titus 2:11‑12"],
+      ["Hope", "Lamentations 3:22‑23"], ["Victory mindset", "1 Corinthians 15:57"],
+      ["Confession", "James 5:16"], ["Emotional healing", "Psalm 147:3"],
+      ["Joy in God", "Psalm 16:11"], ["Clean hands", "Psalm 24:3‑4"],
+      ["Eyes on Jesus", "Hebrews 12:1‑2"], ["No shame", "Romans 8:1"],
+      ["Grace", "Ephesians 2:8‑9"], ["Freedom", "Psalm 107:14"],
+      ["Stand firm", "1 Peter 5:8‑9"], ["Body is a temple", "1 Corinthians 6:19‑20"],
+      ["Victory declared", "Revelation 12:11"], ["Daily renewal", "2 Corinthians 4:16"],
+      ["Testimony", "Psalm 40:1‑3"]
+    ];
+
+    function initTracker() {
+      const container = document.getElementById("daysContainer");
+      const today = new Date();
+      if (today.getDay() === 1) document.getElementById("fastingBanner").style.display = "block";
+
+      let streak = 0;
+
+      days.forEach((item, i) => {
+        const [focus, verse] = item;
+        const checked = localStorage.getItem(`day${i}`) === "true";
+        if (checked) streak++;
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <label>
+            <input type="checkbox" id="day${i}" ${checked ? "checked" : ""} />
+            <div>
+              <div class="focus">Day ${i + 1}: ${focus}</div>
+              <div class="verse">${verse}</div>
+            </div>
+          </label>
+        `;
+        container.appendChild(card);
+
+        document.getElementById(`day${i}`).addEventListener("change", (e) => {
+          localStorage.setItem(`day${i}`, e.target.checked);
+          updateStreak();
+        });
+      });
+
+      updateStreak();
+    }
+
+    function updateStreak() {
+      let count = 0;
+      for (let i = 0; i < days.length; i++) {
+        if (localStorage.getItem(`day${i}`) === "true") count++;
+      }
+      document.getElementById("streak").textContent = `Streak: ${count} day${count !== 1 ? 's' : ''}`;
+    }
+
+    function showRefocus() {
+      const verses = [
+        "Romans 6:14 – Sin shall no longer be your master.",
+        "1 Cor. 10:13 – God always provides a way out.",
+        "Galatians 5:16 – Walk by the Spirit.",
+        "2 Tim 2:22 – Flee youthful lusts.",
+        "Psalm 119:11 – Your word I’ve hidden in my heart."
+      ];
+      const verse = verses[Math.floor(Math.random() * verses.length)];
+      const box = document.getElementById("refocusBox");
+      box.style.display = "block";
+      box.innerHTML = `
+        <p><strong>${verse}</strong></p>
+        <p>Breathe in deeply… Breathe out temptation.</p>
+        <p><em>“Jesus, I surrender. I choose freedom now.”</em></p>
+      `;
+    }
+  </script>
+</body>
+</html>      padding: 0.5rem;
       font-family: inherit;
     }
     .refocus-btn {
